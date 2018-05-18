@@ -2,9 +2,6 @@ CJSON_OBJ = cJSON.o
 UTILS_OBJ = cJSON_Utils.o
 CJSON_LIBNAME = libcjson
 UTILS_LIBNAME = libcjson_utils
-CJSON_TEST = cJSON_test
-
-CJSON_TEST_SRC = cJSON.c test.c
 
 LDLIBS = -lm
 
@@ -27,12 +24,6 @@ INSTALL ?= cp -a
 # validate gcc version for use fstack-protector-strong
 MIN_GCC_VERSION = "4.9"
 GCC_VERSION := "`gcc -dumpversion`"
-IS_GCC_ABOVE_MIN_VERSION := $(shell expr "$(GCC_VERSION)" ">=" "$(MIN_GCC_VERSION)")
-ifeq "$(IS_GCC_ABOVE_MIN_VERSION)" "1"
-    CFLAGS += -fstack-protector-strong
-else
-    CFLAGS += -fstack-protector
-endif
 
 R_CFLAGS = -fPIC -std=c89 -pedantic -Wall -Werror -Wstrict-prototypes -Wwrite-strings -Wshadow -Winit-self -Wcast-align -Wformat=2 -Wmissing-prototypes -Wstrict-overflow=2 -Wcast-qual -Wc++-compat -Wundef -Wswitch-default -Wconversion $(CFLAGS)
 
@@ -63,26 +54,16 @@ UTILS_STATIC = $(UTILS_LIBNAME).$(STATIC)
 
 SHARED_CMD = $(CC) -shared -o
 
-.PHONY: all shared static tests clean install
+.PHONY: all shared static clean install
 
-all: shared static tests
+all: shared static 
 
 shared: $(CJSON_SHARED) $(UTILS_SHARED)
 
 static: $(CJSON_STATIC) $(UTILS_STATIC)
 
-tests: $(CJSON_TEST)
-
-test: tests
-	./$(CJSON_TEST)
-
 .c.o:
 	$(CC) -c $(R_CFLAGS) $<
-
-#tests
-#cJSON
-$(CJSON_TEST): $(CJSON_TEST_SRC) cJSON.h
-	$(CC) $(R_CFLAGS) $(CJSON_TEST_SRC)  -o $@ $(LDLIBS) -I.
 
 #static libraries
 #cJSON
@@ -154,4 +135,3 @@ clean:
 	$(RM) $(CJSON_OBJ) $(UTILS_OBJ) #delete object files
 	$(RM) $(CJSON_SHARED) $(CJSON_SHARED_VERSION) $(CJSON_SHARED_SO) $(CJSON_STATIC) #delete cJSON
 	$(RM) $(UTILS_SHARED) $(UTILS_SHARED_VERSION) $(UTILS_SHARED_SO) $(UTILS_STATIC) #delete cJSON_Utils
-	$(RM) $(CJSON_TEST)  #delete test
